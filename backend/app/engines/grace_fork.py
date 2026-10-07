@@ -1,10 +1,14 @@
-"""Grace helpers for overdue styling paths."""
+"""Grace helpers for overdue styling paths.
+
+Every entry point (board columns, borrow/return records, return preview)
+rebases onto the same stored grace value — no per-path forks.
+"""
 
 def board_grace(c, read_fn) -> int:
     return read_fn(c)
 
 def record_grace(c, read_fn) -> int:
-    return 0
+    return read_fn(c)
 
 def paint_overdue_style(rows: list, grace_used: int) -> list:
     out = []

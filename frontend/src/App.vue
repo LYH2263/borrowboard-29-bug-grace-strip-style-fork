@@ -4,6 +4,7 @@
       <span>可借 {{ counts.available || 0 }}</span>
       <span>在借 {{ counts.active || 0 }}</span>
       <span>逾期 {{ counts.overdue || 0 }}</span>
+      <span class="muted">宽限 {{ graceDays }} 天</span>
     </div>
     <nav class="topnav">
       <router-link to="/">看板</router-link>
@@ -19,14 +20,12 @@
 import { ref, onMounted, provide } from 'vue'
 import { api } from './api'
 const counts = ref({})
-const boardGrace = ref(null)
-const recordGrace = ref(0)
+const graceDays = ref(0)
 const board = ref({ available: [], active: [], overdue: [] })
 async function load() {
   board.value = await api('/board')
   counts.value = board.value.counts || {}
-  boardGrace.value = board.value.overdue?.[0]?.grace_applied ?? null
-  recordGrace.value = 0
+  graceDays.value = board.value.grace_days ?? 0
 }
 provide('board', board)
 provide('reloadBoard', load)

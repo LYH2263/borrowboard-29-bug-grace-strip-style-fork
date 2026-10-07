@@ -39,7 +39,15 @@ async function ret(id) {
   const p = await api('/loans/' + id + '/return-preview')
   const msg = `确认归还「${p.title}」（${p.borrower}）？\n应还 ${p.due_date} · 宽限 ${p.grace_days} 天 · ${p.overdue ? '已逾期' : '未逾期'}`
   if (!confirm(msg)) return
-  await api('/loans/' + id + '/return', { method: 'POST', body: '{}' })
+  try {
+    await api('/loans/' + id + '/return', { method: 'POST', body: JSON.stringify({ grace_version: p.grace_version }) })
+  } catch (e) {
+    if (String(e.message).includes('grace_changed')) {
+      alert('宽限设置刚刚变更，逾期判定已变化，请重新确认归还')
+    } else {
+      alert('归还失败：' + e.message)
+    }
+  }
   await reload()
 }
 </script>

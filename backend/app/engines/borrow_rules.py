@@ -2,6 +2,8 @@
 
 from datetime import date, timedelta
 
+MAX_GRACE_DAYS = 999_999_999  # timedelta(days=...) upper bound
+
 def can_lend(item_status: str, active_loans: int) -> dict:
     if item_status != "available":
         return {"ok": False, "reason": "item_not_available"}
@@ -10,7 +12,7 @@ def can_lend(item_status: str, active_loans: int) -> dict:
     return {"ok": True, "reason": ""}
 
 def parse_grace_days(value) -> int | None:
-    """Zero or positive integer, else None (rejected)."""
+    """Zero or positive integer within timedelta range, else None (rejected)."""
     if isinstance(value, bool):
         return None
     if isinstance(value, int):
@@ -22,7 +24,7 @@ def parse_grace_days(value) -> int | None:
         n = int(s)
     else:
         return None
-    return n if n >= 0 else None
+    return n if 0 <= n <= MAX_GRACE_DAYS else None
 
 def is_overdue(due_date: str, today: str, loan_status: str, grace_days: int = 0) -> bool:
     if loan_status != "active" or not due_date:
@@ -32,6 +34,8 @@ def is_overdue(due_date: str, today: str, loan_status: str, grace_days: int = 0)
             limit = date.fromisoformat(due_date) + timedelta(days=grace_days)
         except ValueError:
             limit = None
+        except OverflowError:
+            return False  # grace beyond any representable date: never overdue
         if limit is not None:
             return limit.isoformat() < today
     return due_date < today

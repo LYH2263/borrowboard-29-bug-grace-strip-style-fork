@@ -26,5 +26,6 @@ def init_db():
         c.execute("INSERT INTO settings(key,value) VALUES ('board_name','木色邻里板')")
         c.commit()
     c.execute("INSERT OR IGNORE INTO settings(key,value) VALUES ('grace_days','0')")
+    c.execute("INSERT OR IGNORE INTO settings(key,value) VALUES ('grace_version','0')")
     c.commit()
     c.close()

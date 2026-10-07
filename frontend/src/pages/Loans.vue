@@ -1,6 +1,7 @@
 <template>
   <div style="padding:16px">
     <h1>借还记录 · 邻里互借</h1>
+    <div class="muted">逾期判定与看板同一宽限：{{ data.grace_days ?? 0 }} 天</div>
     <h3>逾期</h3>
     <div v-for="l in data.overdue" :key="'o'+l.id" class="item overdue">{{ l.title }} · {{ l.borrower }} · 应还 {{ l.due_date }}</div>
     <h3>在借</h3>
