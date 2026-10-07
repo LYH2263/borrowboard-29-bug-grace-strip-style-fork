@@ -19,14 +19,11 @@
 import { ref, onMounted, provide } from 'vue'
 import { api } from './api'
 const counts = ref({})
-const boardGrace = ref(null)
-const recordGrace = ref(0)
 const board = ref({ available: [], active: [], overdue: [] })
 async function load() {
+  // 顶细条数字只认 /board 这一个世界；借还记录页挂载时按同一判定自取。
   board.value = await api('/board')
   counts.value = board.value.counts || {}
-  boardGrace.value = board.value.overdue?.[0]?.grace_applied ?? null
-  recordGrace.value = 0
 }
 provide('board', board)
 provide('reloadBoard', load)

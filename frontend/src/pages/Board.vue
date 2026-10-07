@@ -39,7 +39,25 @@ async function ret(id) {
   const p = await api('/loans/' + id + '/return-preview')
   const msg = `确认归还「${p.title}」（${p.borrower}）？\n应还 ${p.due_date} · 宽限 ${p.grace_days} 天 · ${p.overdue ? '已逾期' : '未逾期'}`
   if (!confirm(msg)) return
-  await api('/loans/' + id + '/return', { method: 'POST', body: '{}' })
+  try {
+    // 提交时带上预演所用宽限：设置若在确认间隙被改，后端按同一事务判定
+    // 并拒绝跨宽限世界结算，而不是静默按另一套结。
+    const s = await api('/loans/' + id + '/return', {
+      method: 'POST',
+      body: JSON.stringify({ expected_grace: p.grace_days }),
+    })
+    if (s.grace_days !== p.grace_days || s.overdue !== p.overdue) {
+      alert(`宽限设置在确认期间已变更，本笔按当前宽限 ${s.grace_days} 天结算（${s.overdue ? '逾期' : '未逾期'}），看板已刷新。`)
+    }
+  } catch (e) {
+    if (e.message === 'stale_preview') {
+      alert('宽限设置刚被修改，逾期判定已变，请重新确认归还。')
+    } else {
+      alert('归还失败：' + e.message)
+    }
+    await reload()
+    return
+  }
   await reload()
 }
 </script>
